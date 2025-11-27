@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Google Sheet</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        #error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Data Google Sheet</h2>
+    <p>Data di bawah ini otomatis di-load dari Google Sheet Anda.</p>
+
+    <table id="dataTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <div id="error"></div>
+
+    <script>
+        const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQcxX5p7XRSsKMpl0Ntx9lKCIYahw0ZIhCzR6MAHK2Glj_RU-2-gXggkoUkb0GdH74x55M54hzpeueT/pub?output=tsv";
+
+        async function loadData() {
+            try {
+                const response = await fetch(DATA_URL);
+                if (!response.ok) throw new Error("Fetch error");
+
+                const text = await response.text();
+
+                let delimiter = ",";
+                if (text.includes("\t")) delimiter = "\t";
+
+                const rows = text.trim().split("\n").map(r => r.split(delimiter));
+
+                const tableHead = document.getElementById("tableHead");
+                const tableBody = document.getElementById("tableBody");
+
+                let headHTML = "<tr>";
+                rows[0].forEach(h => headHTML += `<th>${h}</th>`);
+                headHTML += "</tr>";
+                tableHead.innerHTML = headHTML;
+
+                let bodyHTML = "";
+                rows.slice(1).forEach(row => {
+                    bodyHTML += "<tr>";
+                    row.forEach(col => bodyHTML += `<td>${col}</td>`);
+                    bodyHTML += "</tr>";
+                });
+                tableBody.innerHTML = bodyHTML;
+
+            } catch (e) {
+                document.getElementById("error").innerText =
+                    "⚠️ Gagal memuat data. Pastikan URL dapat diakses publik.";
+            }
+        }
+
+        loadData();
+    </script>
+
+</body>
+</html>
